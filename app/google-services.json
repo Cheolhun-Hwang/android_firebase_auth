@@ -1,0 +1,105 @@
+{
+  "project_info": {
+    "project_number": "250495192905",
+    "firebase_url": "https://startupproject-5b5ca.firebaseio.com",
+    "project_id": "startupproject-5b5ca",
+    "storage_bucket": "startupproject-5b5ca.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:250495192905:android:95b78ac7b29b9b3d",
+        "android_client_info": {
+          "package_name": "com.example.firebaseemailauthproject"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "250495192905-62k9gufrc2r0l6cmgkjdvjhirdncp686.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.firebaseemailauthproject",
+            "certificate_hash": "309843f7dcc34231660337dcb2fbb4b5b11050ae"
+          }
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0OWfczNhxXy3UW7LJ4QBMjxogErmJXLE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:250495192905:android:6ef71d5ff6a618d8",
+        "android_client_info": {
+          "package_name": "com.hooney.thumnailproject"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "250495192905-uh19mno57iuj9nt1gjdhbc61ft00u6pl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.hooney.thumnailproject",
+            "certificate_hash": "80dea5f111f33abcf5c637f5deb0ce8319eb07b3"
+          }
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0OWfczNhxXy3UW7LJ4QBMjxogErmJXLE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:250495192905:android:a65640aaa02cb56a",
+        "android_client_info": {
+          "package_name": "com.hooneys.hblack"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0OWfczNhxXy3UW7LJ4QBMjxogErmJXLE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:250495192905:android:5c0fd4d0b44d22bb",
+        "android_client_info": {
+          "package_name": "com.hooneys.partyroom"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0OWfczNhxXy3UW7LJ4QBMjxogErmJXLE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

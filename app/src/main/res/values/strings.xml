@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">FirebaseEmail</string>
+
+    <string name="email">이메일</string>
+    <string name="password">비밀번호</string>
+
+    <string name="signin">로그인</string>
+    <string name="success_login">로그인 성공</string>
+    <string name="failed_login">로그인 실패</string>
+
+    <string name="signup">회원가입</string>
+    <string name="success_signup">회원가입 성공</string>
+    <string name="failed_signup">회원가입 실패</string>
+    <string name="show_text_email_auth">Email 인증</string>
+    <string name="show_text_phone_auth">Phone 인증</string>
+    <string name="notify_read_phone_number">핸드폰 번호를 가져옵니다.</string>
+    <string name="read_phone_number">Read Phone Number</string>
+    <string name="complete_phone_auth">인증 완료</string>
+</resources>
