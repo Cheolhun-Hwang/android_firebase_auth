@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -34,17 +35,28 @@ public class PhoneActivity extends AppCompatActivity {
     private final String TAG = PhoneActivity.class.getSimpleName();
     private final String PHONE_READ_STATE = Manifest.permission.READ_PHONE_STATE;
     private final int SIG_PHONE_READ_STATE = 501;
+    private final String KEY_PHONE_STATE = "com.example.firebaseauth.phone_state";
 
     // 파이어베이스 인증 객체 생성
     private FirebaseAuth firebaseAuth;
+    private PhoneAuthProvider.OnVerificationStateChangedCallbacks mCallback;
+    private PhoneAuthProvider.ForceResendingToken globalToken;
 
     private TextView showPhoneState;
+    private EditText varifyCode;
     private String verificationId;
+
+    // APP + meta > auth key google > block!
+    // 010-0000-0000 > +821000000000
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_phone);
+
+        if(savedInstanceState != null){
+            onRestoreInstanceState(savedInstanceState);
+        }
 
         // 파이어베이스 인증 객체 선언
         firebaseAuth = FirebaseAuth.getInstance();
@@ -53,8 +65,91 @@ public class PhoneActivity extends AppCompatActivity {
         init();
     }
 
+    @Override
+    protected void onDestroy() {
+        signout();
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(KEY_PHONE_STATE, showPhoneState.getText().toString());
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        showPhoneState.setText(savedInstanceState.getString(KEY_PHONE_STATE));
+    }
+
+    private void signout() {
+        Log.i(TAG, "Log out!");
+        firebaseAuth.signOut();
+    }
+
     private void init() {
+        mCallback = new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+            @Override
+            public void onVerificationCompleted(PhoneAuthCredential phoneAuthCredential) {
+                Log.d(TAG, "Completed Phone Auth");
+                signInWithPhoneAuthCredential(phoneAuthCredential);
+            }
+
+            @Override
+            public void onVerificationFailed(FirebaseException e) {
+                Log.e(TAG, "Failed Phone Auth");
+                if(e instanceof FirebaseAuthInvalidCredentialsException){
+                    Snackbar.make(findViewById(android.R.id.content), "Failed Credential",
+                            Snackbar.LENGTH_SHORT).show();
+                }else if(e instanceof FirebaseTooManyRequestsException){
+                    Snackbar.make(findViewById(android.R.id.content), "Too much!! Click!!",
+                            Snackbar.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onCodeSent(String s, PhoneAuthProvider.ForceResendingToken forceResendingToken) {
+                Log.d(TAG, "onCodeSent");
+                verificationId = s;
+                globalToken = forceResendingToken;
+                Toast.makeText(PhoneActivity.this, "Code Sent!!", Toast.LENGTH_SHORT).show();
+            }
+        };
+
+        varifyCode = findViewById(R.id.auth_sms_edit);
         showPhoneState = findViewById(R.id.notify_phone_state);
+    }
+
+    private void signInWithPhoneAuthCredential(final PhoneAuthCredential phoneAuthCredential) {
+        firebaseAuth.signInWithCredential(phoneAuthCredential)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if(task.isSuccessful()){
+                    Log.d(TAG, "Success!");
+                    FirebaseUser user = task.getResult().getUser();
+
+                    if(phoneAuthCredential != null){
+                        if(phoneAuthCredential.getSmsCode() != null){
+                            varifyCode.setText(phoneAuthCredential.getSmsCode());
+                        }
+                    }
+
+                    AlertDialog.Builder alert = new AlertDialog.Builder(PhoneActivity.this);
+                    alert.setTitle("Phone 인증").setMessage("인증에 성공하셨습니다.\n"+user.getUid());
+                    alert.setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    }).show();
+                }else{
+                    Log.d(TAG, "Failed");
+                    Toast.makeText(PhoneActivity.this, "Auth Failed!!", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     public void readPhoneState(View view) {
@@ -66,85 +161,22 @@ public class PhoneActivity extends AppCompatActivity {
     }
 
     public void sendPhoneAuth(View view){
+        //인증하기 버튼
         String phoneNumber = showPhoneState.getText().toString();
 
+        Log.d(TAG, "phone : " + phoneNumber);
+
+        startPhoneNumberVerification(phoneNumber);
+    }
+
+    private void startPhoneNumberVerification(String phoneNumber) {
         PhoneAuthProvider.getInstance().verifyPhoneNumber(
-                phoneNumber,        // Phone number to verify
-                60,                 // Timeout duration
-                TimeUnit.SECONDS,   // Unit of timeout
-                this,               // Activity (for callback binding)
-                new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
-                    @Override
-                    public void onVerificationCompleted(PhoneAuthCredential credential) {
-                        // This callback will be invoked in two situations:
-                        // 1 - Instant verification. In some cases the phone number can be instantly
-                        //     verified without needing to send or enter a verification code.
-                        // 2 - Auto-retrieval. On some devices Google Play services can automatically
-                        //     detect the incoming verification SMS and perform verification without
-                        //     user action.
-                        Log.d(TAG, "onVerificationCompleted:" + credential);
-
-                        signInWithPhoneAuthCredential(credential);
-                    }
-
-                    @Override
-                    public void onVerificationFailed(FirebaseException e) {
-                        // This callback is invoked in an invalid request for verification is made,
-                        // for instance if the the phone number format is not valid.
-                        Log.w(TAG, "onVerificationFailed", e);
-
-                        if (e instanceof FirebaseAuthInvalidCredentialsException) {
-                            // Invalid request
-                            // ...
-                        } else if (e instanceof FirebaseTooManyRequestsException) {
-                            // The SMS quota for the project has been exceeded
-                            // ...
-                        }
-                    }
-
-                    @Override
-                    public void onCodeSent(String vid,
-                                           PhoneAuthProvider.ForceResendingToken token) {
-                        // The SMS verification code has been sent to the provided phone number, we
-                        // now need to ask the user to enter the code and then construct a credential
-                        // by combining the code with a verification ID.
-                        Log.d(TAG, "onCodeSent:" + vid);
-                        verificationId = vid;
-                        // ...
-                    }
-                });        // OnVerificationStateChangedCallbacks
-    }
-
-    private void signInWithPhoneAuthCredential(PhoneAuthCredential credential) {
-        firebaseAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            Log.d(TAG, "signInWithCredential:success");
-
-                            FirebaseUser user = task.getResult().getUser();
-                            Toast.makeText(PhoneActivity.this, "인증 성공", Toast.LENGTH_SHORT).show();
-                        } else {
-                            // Sign in failed, display a message and update the UI
-                            Log.w(TAG, "signInWithCredential:failure", task.getException());
-                            if (task.getException() instanceof FirebaseAuthInvalidCredentialsException) {
-                                // The verification code entered was invalid
-                            }
-                        }
-                    }
-                });
-    }
-
-
-    public void commitPhoneAuth(View view){
-        EditText editText = findViewById(R.id.auth_sms_edit);
-        String s_auth = editText.getText().toString();
-        if(s_auth.isEmpty()){
-            return;
-        }
-        PhoneAuthCredential credential = PhoneAuthProvider.getCredential(verificationId, s_auth);
+                phoneNumber,
+                60,
+                TimeUnit.SECONDS,
+                this,
+                mCallback
+        );
     }
 
     @SuppressLint("MissingPermission")
@@ -152,9 +184,15 @@ public class PhoneActivity extends AppCompatActivity {
         //already check Permissions to readPhoneState().
         TelephonyManager telManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
         String phoneNumber = telManager.getLine1Number();
-        if(phoneNumber.startsWith("+82")){
-            phoneNumber = phoneNumber.replace("+82", "0");
+
+        if(!phoneNumber.startsWith("+82")){
+            String afterNumber = phoneNumber.substring(1);
+            phoneNumber = "+82"+afterNumber;
+            phoneNumber = phoneNumber.replaceAll("-", "");
         }
+//        if(phoneNumber.startsWith("+82")){
+//            phoneNumber = phoneNumber.replace("+82", "0");
+//        }
         showPhoneState.setText(phoneNumber);
     }
 

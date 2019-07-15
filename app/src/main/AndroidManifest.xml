@@ -13,15 +13,17 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".PhoneAuthActivity">
+
+        </activity>
+        <activity
+            android:name=".PhoneActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
-        <activity
-            android:name=".PhoneActivity"
-            android:parentActivityName=".SelectionActivity" />
         <activity
             android:name=".SelectionActivity"
             android:launchMode="singleTop">
@@ -29,7 +31,9 @@
         </activity>
         <activity
             android:name=".MainActivity"
-            android:parentActivityName=".SelectionActivity" />
+            android:parentActivityName=".SelectionActivity" >
+
+        </activity>
     </application>
 
 </manifest>
